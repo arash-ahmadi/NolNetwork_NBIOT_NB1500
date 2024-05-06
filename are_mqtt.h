@@ -3,6 +3,7 @@
 void mqtt_reconnect(PubSubClient *mqtt_client) {
   // Loop until we're reconnected
   while (!mqtt_client->connected()) {
+    
     Serial.print("Attempting MQTT connection...");
     if (mqtt_client->connect("0zsoj28wa0txf6eoa59i", MQTT_USER, MQTT_PASSWORD, MQTT_LASTWILL_TOPIC, MQTT_LASTWILL_QOS, MQTT_LASTWILL_RETAIN, MQTT_LASTWILL_MESSAGE)) {
       Serial.println("MQTT Connected");

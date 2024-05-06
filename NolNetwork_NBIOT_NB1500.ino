@@ -40,11 +40,12 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 const int analogInPin = A0;  // Connect to Signal pin of 4913B TLE4913 Hall Effect Sensor
 const int threshold = 550;  // this is for 5V Power Supply
 
-
+boolean connected = false;
 // variables
 long lastMsg = 0; // time counter for MQTT intervalls
 int state = 1;
-float counter = 5.45;
+float counter = 5.54;
+float counterInitial = counter;
 int sensorValue = 0;
 int sensorValue_last = 0;
 bool sensor_high = false;
@@ -211,7 +212,16 @@ const unsigned char logo [] PROGMEM = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-
+void DisplayLogo(){
+  
+   display.clearDisplay();
+  display.drawBitmap(0, 0,  logo,128,64,1);
+  display.display();
+  delay(5000);
+  display.clearDisplay();
+  display.display();
+  delay(25);
+}
 void DisplayGasFlow(){
   
      display.clearDisplay(); 
@@ -219,10 +229,8 @@ void DisplayGasFlow(){
      display.print(counter);
      display.display();
 //     delay(1000);
-//     display.clearDisplay();
-   
+//     display.clearDisplay()
      delay(25);
-
 }
 void DisplayNetworkConnected(){
      display.clearDisplay(); 
@@ -267,13 +275,15 @@ void setup() {
   // display.println("aaConnected");
 
   //Connect to NETWORK ****************************************************
-  boolean connected = false;
+ 
   while (!connected) {
     if ((nbAccess.begin(PINNUMBER) == NB_READY) &&
         (gprs.attachGPRS() == GPRS_READY)) {
       connected = true;
+      
       Serial.println("NB-IOT Connected");
       DisplayNetworkConnected();
+     
     } else {
       Serial.println("Network Not connected");
       delay(1000);
@@ -283,13 +293,9 @@ void setup() {
 
  
       //Connect to MQTT *******************************************************
-      mqttclient.setServer(MQTT_SERVER, MQTT_PORT);
-      mqttclient.setCallback(callback);
-      Serial.print("MQTT topic for publishing: ");
-      Serial.println(TOPIC_SENSOR_HALL);
-
-      mqtt_check_connection(&mqttclient);
-      mqttclient.publish(TOPIC_SENSOR_HALL, "HELLO");
+  mqttclient.setServer(MQTT_SERVER, MQTT_PORT);
+  mqttclient.setCallback(callback);
+      
   }   
 
 
@@ -361,10 +367,10 @@ void loop() {
   }
   if (notify_mqtt)
   {
-  
+
     // ensure connection to mqtt broker
     mqtt_check_connection(&mqttclient);
-
+    
     // Convert sensor reading from float to a char array
     // char tempString[8];  // increase array length if having runtime errors
     // dtostrf(counter, 1, 2, tempString);
